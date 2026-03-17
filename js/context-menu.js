@@ -63,13 +63,8 @@ function showMenu(x, y, rowIdx) {
   }
 
   let html = '';
-  html += `<div class="ctx-menu-item" data-action="add-row-above">Add empty row above</div>`;
-  html += `<div class="ctx-menu-item" data-action="add-row-below">Add empty row below</div>`;
-  html += `<div class="ctx-menu-item" data-action="add-cat-above">Add category above</div>`;
-  html += `<div class="ctx-menu-item" data-action="add-cat-below">Add category below</div>`;
-  html += `<div class="ctx-menu-sep"></div>`;
 
-  // "Move to" submenu
+  // "Move to" submenu — top of menu
   if (categories.length > 0) {
     html += `<div class="ctx-menu-item ctx-submenu-parent">Move to &#9656;
       <div class="ctx-submenu">`;
@@ -81,6 +76,11 @@ function showMenu(x, y, rowIdx) {
     html += `<div class="ctx-menu-item disabled">Move to (no categories)</div>`;
   }
 
+  html += `<div class="ctx-menu-sep"></div>`;
+  html += `<div class="ctx-menu-item" data-action="add-row-above">Add empty row above</div>`;
+  html += `<div class="ctx-menu-item" data-action="add-row-below">Add empty row below</div>`;
+  html += `<div class="ctx-menu-item" data-action="add-cat-above">Add category above</div>`;
+  html += `<div class="ctx-menu-item" data-action="add-cat-below">Add category below</div>`;
   html += `<div class="ctx-menu-sep"></div>`;
   html += `<div class="ctx-menu-item" data-action="collapse-all">Collapse all</div>`;
   html += `<div class="ctx-menu-item" data-action="expand-all">Expand all</div>`;
