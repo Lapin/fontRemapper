@@ -115,6 +115,7 @@ function handleFontDrop(files) {
 
 // Store pending CSS if dropped before font
 let pendingCssFile = null;
+let cssWasApplied = false;
 
 function handleCssDrop(files) {
   if (!files || files.length === 0) return;
@@ -159,6 +160,7 @@ function handleCssFile(file, callback) {
         return;
       }
       const applied = applyCssNames(parsed);
+      cssWasApplied = true;
       if (callback) callback();
       else showToast(`Applied ${applied} glyph names from CSS`);
     } catch (err) {
@@ -1082,12 +1084,15 @@ function updateLandingState() {
 
   const cssZone = document.getElementById('cssDropZone');
   if (cssZone) {
-    // Check if CSS names have been applied (glyphs have non-default names)
-    const hasRealNames = s.glyphs.some(g => !g.name.startsWith('glyph-'));
-    if (hasRealNames || pendingCssFile) {
+    if (cssWasApplied) {
       cssZone.querySelector('.drop-zone-icon').innerHTML = '&#x2705;';
       cssZone.querySelector('.drop-zone-title').textContent = 'CSS loaded';
       cssZone.querySelector('.drop-zone-sub').textContent = 'Glyph names applied';
+      cssZone.classList.add('done');
+    } else if (pendingCssFile) {
+      cssZone.querySelector('.drop-zone-icon').innerHTML = '&#x2705;';
+      cssZone.querySelector('.drop-zone-title').textContent = pendingCssFile.name;
+      cssZone.querySelector('.drop-zone-sub').textContent = 'Ready — will apply when font is loaded';
       cssZone.classList.add('done');
     }
   }
