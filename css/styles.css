@@ -213,6 +213,34 @@ body {
   background: #fef2f2;
 }
 
+.ctx-menu-item.disabled {
+  color: #bbb;
+  cursor: default;
+  pointer-events: none;
+}
+
+.ctx-submenu-parent {
+  position: relative;
+}
+
+.ctx-submenu {
+  display: none;
+  position: absolute;
+  left: 100%;
+  top: -4px;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+  min-width: 160px;
+  padding: 4px 0;
+  z-index: 1;
+}
+
+.ctx-submenu-parent:hover > .ctx-submenu {
+  display: block;
+}
+
 .ctx-menu-sep {
   height: 1px;
   background: #e5e5e5;

@@ -6,6 +6,11 @@ import { collapsedCategories, refreshMappingList } from './render.js';
 
 let activeMenu = null;
 
+function escHtml(s) {
+  if (!s) return '';
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
 /**
  * Initialize context menu listeners.
  * Call once on app startup (not per render).
@@ -49,11 +54,33 @@ function showMenu(x, y, rowIdx) {
   const selectedCount = s.selectedRows.size;
   const hasMultiSelection = selectedCount > 1;
 
+  // Gather categories for "Move to" submenu
+  const categories = [];
+  for (let i = 0; i < s.mappings.length; i++) {
+    if (s.mappings[i].isCategory) {
+      categories.push({ idx: i, name: s.mappings[i].categoryName, _id: s.mappings[i]._id });
+    }
+  }
+
   let html = '';
   html += `<div class="ctx-menu-item" data-action="add-row-above">Add empty row above</div>`;
   html += `<div class="ctx-menu-item" data-action="add-row-below">Add empty row below</div>`;
   html += `<div class="ctx-menu-item" data-action="add-cat-above">Add category above</div>`;
   html += `<div class="ctx-menu-item" data-action="add-cat-below">Add category below</div>`;
+  html += `<div class="ctx-menu-sep"></div>`;
+
+  // "Move to" submenu
+  if (categories.length > 0) {
+    html += `<div class="ctx-menu-item ctx-submenu-parent">Move to &#9656;
+      <div class="ctx-submenu">`;
+    for (const cat of categories) {
+      html += `<div class="ctx-menu-item" data-action="move-to-cat" data-cat-id="${escHtml(cat._id)}">${escHtml(cat.name)}</div>`;
+    }
+    html += `</div></div>`;
+  } else {
+    html += `<div class="ctx-menu-item disabled">Move to (no categories)</div>`;
+  }
+
   html += `<div class="ctx-menu-sep"></div>`;
   html += `<div class="ctx-menu-item" data-action="collapse-all">Collapse all</div>`;
   html += `<div class="ctx-menu-item" data-action="expand-all">Expand all</div>`;
@@ -85,11 +112,15 @@ function showMenu(x, y, rowIdx) {
   activeMenu = menu;
 
   // Wire each item directly — no container listener accumulation
-  menu.querySelectorAll('.ctx-menu-item').forEach(item => {
-    item.addEventListener('click', () => {
+  menu.querySelectorAll('.ctx-menu-item[data-action]').forEach(item => {
+    // Skip parent items that only contain a submenu
+    if (item.classList.contains('ctx-submenu-parent')) return;
+    item.addEventListener('click', (e) => {
+      e.stopPropagation();
       const action = item.dataset.action;
+      const catId = item.dataset.catId || null;
       closeMenu();
-      handleAction(action, rowIdx);
+      handleAction(action, rowIdx, catId);
     }, { once: true });
   });
 }
@@ -113,7 +144,7 @@ function getNextCodepoint(mappings) {
   return (max + 1).toString(16);
 }
 
-function handleAction(action, rowIdx) {
+function handleAction(action, rowIdx, catId) {
   const s = getState();
 
   switch (action) {
@@ -184,6 +215,47 @@ function handleAction(action, rowIdx) {
           s.mappings.splice(idx, 1);
         }
       }
+      s.selectedRows.clear();
+      s.lastClickedRow = null;
+      autoSave();
+      notify();
+      break;
+    }
+
+    case 'move-to-cat': {
+      if (!catId) break;
+      // Collect rows to move: selected rows or just the right-clicked row
+      let indicesToMove;
+      if (s.selectedRows.size > 0 && s.selectedRows.has(rowIdx)) {
+        indicesToMove = Array.from(s.selectedRows).sort((a, b) => a - b);
+      } else {
+        indicesToMove = [rowIdx];
+      }
+      // Don't move categories
+      indicesToMove = indicesToMove.filter(i => s.mappings[i] && !s.mappings[i].isCategory);
+      if (indicesToMove.length === 0) break;
+
+      // Extract items
+      const items = indicesToMove.map(i => s.mappings[i]);
+
+      // Remove from current positions (reverse order to preserve indices)
+      for (let i = indicesToMove.length - 1; i >= 0; i--) {
+        s.mappings.splice(indicesToMove[i], 1);
+      }
+
+      // Find the target category by _id (stable after removals)
+      let targetCatIdx = s.mappings.findIndex(m => m.isCategory && m._id === catId);
+      if (targetCatIdx === -1) break;
+
+      // Find the end of the target category section
+      let insertIdx = targetCatIdx + 1;
+      while (insertIdx < s.mappings.length && !s.mappings[insertIdx].isCategory) {
+        insertIdx++;
+      }
+
+      // Insert items at the end of the target category section
+      s.mappings.splice(insertIdx, 0, ...items);
+
       s.selectedRows.clear();
       s.lastClickedRow = null;
       autoSave();
