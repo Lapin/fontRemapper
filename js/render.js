@@ -254,10 +254,11 @@ export function renderMappingView() {
         <!-- Left: Glyph Table -->
         <div class="section section-mapping">
           <div class="section-header">
+            <h3 class="section-title">Glyph Table</h3>
             <div class="section-header-top">
               <div class="font-name-group">
                 <input class="font-name-input" id="fontNameInput" value="${escHtml(s.fontName || 'Untitled Font')}">
-                <div class="font-name-hint">This name is used for exported files (e.g. <strong>${escHtml(s.fontName || 'fontname')}-icon</strong>)</div>
+                <div class="font-name-hint">This name is used for exported files (e.g. <strong>${escHtml(s.fontName || 'fontname')}-star</strong>)</div>
               </div>
               <div class="mapping-controls-right">
                 <button class="btn btn-secondary" id="btnEditSelected" disabled>Edit</button>
@@ -600,7 +601,7 @@ function wireMapEvents() {
   if (fontNameInput) {
     const updateHint = () => {
       const hint = document.querySelector('.font-name-hint strong');
-      if (hint) hint.textContent = (fontNameInput.value.trim() || 'fontname') + '-icon';
+      if (hint) hint.textContent = (fontNameInput.value.trim() || 'fontname') + '-star';
     };
     fontNameInput.addEventListener('input', updateHint);
     fontNameInput.addEventListener('change', () => {
@@ -944,18 +945,19 @@ function wireMapEvents() {
   const colResize = document.getElementById('colResize');
   if (colResize) {
     let startX, startLeftWidth;
+    const mappingSection = document.querySelector('.section-mapping');
     const colFont = document.querySelector('.col-font');
     colResize.addEventListener('mousedown', (e) => {
+      e.preventDefault();
       startX = e.clientX;
       startLeftWidth = colFont ? colFont.offsetWidth : 200;
       document.body.style.cursor = 'col-resize';
       document.body.style.userSelect = 'none';
       const onMove = (e) => {
         const diff = e.clientX - startX;
-        const newFlex = Math.max(100, startLeftWidth + diff);
-        if (colFont) colFont.style.flex = `0 0 ${newFlex}px`;
-        // Also update row-font columns
-        document.querySelectorAll('.row-font').forEach(el => el.style.flex = `0 0 ${newFlex}px`);
+        const newWidth = Math.max(120, Math.min(startLeftWidth + diff, (mappingSection?.offsetWidth || 800) - 200));
+        // Use CSS variable so it persists across re-renders
+        document.documentElement.style.setProperty('--col-font-width', newWidth + 'px');
       };
       const onUp = () => {
         document.removeEventListener('mousemove', onMove);

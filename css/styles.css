@@ -502,7 +502,7 @@ body {
 }
 
 .col-font {
-  flex: 1;
+  flex: 0 0 var(--col-font-width, 50%);
   min-width: 0;
 }
 
@@ -579,7 +579,7 @@ body {
 
 /* ===== Row Font Column ===== */
 .row-font {
-  flex: 1;
+  flex: 0 0 var(--col-font-width, 50%);
   display: flex;
   align-items: center;
   gap: 10px;
