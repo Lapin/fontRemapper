@@ -736,22 +736,23 @@ function buildHtmlPreview(fontName, allMappings, otfBase64, woffBase64, svgEntri
     color: #555;
   }
   .category-body {
-    padding: 12px;
+    padding: 10px;
+    background: #fff;
   }
   .grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-    gap: 10px;
+    gap: 8px;
   }
   .card {
-    background: #fff;
-    border: 1px solid #e5e7eb;
-    border-radius: 8px;
+    background: #fafafa;
+    border: 1px solid #eee;
+    border-radius: 0;
     padding: 16px 12px;
     text-align: center;
-    transition: border-color 0.15s, box-shadow 0.15s;
+    transition: background 0.15s;
   }
-  .card:hover { border-color: #93c5fd; box-shadow: 0 1px 4px rgba(0,0,0,0.05); }
+  .card:hover { background: #f0f4ff; }
   .card.hidden { display: none; }
   .icon-svg { width: 40px; height: 40px; margin: 0 auto 10px; }
   .icon-svg svg { width: 100%; height: 100%; display: block; }
