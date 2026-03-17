@@ -704,10 +704,13 @@ function wireMapEvents() {
       // Category label edit blur -> save
       // handled below via focusout
 
-      // Category delete
+      // Category delete — only removes the category separator, keeps glyphs
       const deleteBtn = e.target.closest('.category-delete');
       if (deleteBtn) {
         const idx = parseInt(deleteBtn.dataset.idx, 10);
+        const entry = s.mappings[idx];
+        // Remove from collapsed set so orphaned glyphs don't stay hidden
+        if (entry && entry._id) collapsedCategories.delete(entry._id);
         s.mappings.splice(idx, 1);
         autoSave();
         notify();
@@ -756,9 +759,17 @@ function wireMapEvents() {
           for (let i = start; i <= end; i++) {
             s.selectedRows.add(i);
           }
-        } else {
-          // Toggle single row
+        } else if (e.metaKey || e.ctrlKey) {
+          // Cmd/Ctrl+click: toggle without clearing others
           if (s.selectedRows.has(idx)) {
+            s.selectedRows.delete(idx);
+          } else {
+            s.selectedRows.add(idx);
+          }
+          s.lastClickedRow = idx;
+        } else {
+          // Normal click: select only this row
+          if (s.selectedRows.has(idx) && s.selectedRows.size === 1) {
             s.selectedRows.delete(idx);
           } else {
             s.selectedRows.clear();

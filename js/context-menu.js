@@ -81,7 +81,7 @@ function showMenu(x, y, rowIdx) {
   menu.style.top = top + 'px';
   activeMenu = menu;
 
-  // Wire actions
+  // Wire actions (use { once: true } to prevent duplicate handlers)
   menu.addEventListener('click', (e) => {
     const item = e.target.closest('.ctx-menu-item');
     if (!item) return;
@@ -89,7 +89,7 @@ function showMenu(x, y, rowIdx) {
     const action = item.dataset.action;
     handleAction(action, rowIdx);
     closeMenu();
-  }, { once: false });
+  }, { once: true });
 
   // Store row index for reference
   menu.dataset.rowIdx = rowIdx;
